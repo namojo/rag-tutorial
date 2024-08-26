@@ -1,0 +1,37 @@
+schemaVersion: 2.1.0
+metadata:
+  name: rag-tutorial
+projects:
+  - git:
+      remotes:
+        origin: 'https://code.sdsdev.co.kr/namojo/rag-tutorial.git'
+    name: rag-tutorial
+components:
+  - container:
+      cpuLimit: 1000m
+      cpuRequest: 30m
+      env:
+        - name: PIP_INDEX_URL
+          value: 'http://nexus.sdsdev.co.kr:8081/repository/pypi/simple'
+        - name: PIP_TRUSTED_HOST
+          value: nexus.sdsdev.co.kr
+        - name: CHE_DASHBOARD_URL
+          value: 'https://ide.sdsdev.co.kr'
+        - name: CHE_PLUGIN_REGISTRY_URL
+          value: 'https://ide.sdsdev.co.kr/plugin-registry/v3'
+        - name: CHE_PLUGIN_REGISTRY_INTERNAL_URL
+          value: 'http://plugin-registry.eclipse-che.svc:8080/v3'
+        - name: OPENVSX_REGISTRY_URL
+          value: ''
+      image: 'sds.redii.net/ide/universal-developer-image:ubi8-latest'
+      memoryLimit: 1.61G
+      memoryRequest: 256Mi
+      mountSources: true
+      sourceMapping: /projects
+      volumeMounts:
+        - name: venv
+          path: /home/user/.venv
+    name: tools
+  - name: venv
+    volume:
+      size: 1G

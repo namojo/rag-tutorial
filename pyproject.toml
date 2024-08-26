@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "rag-example"
+version = "0.1.0"
+description = ""
+authors = ["shinee <seoin.baek@samsung.com>"]
+readme = "README.md"
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+langchain = "^0.1.14"
+langchain-community = "^0.0.31"
+chromadb = "^0.4.24"
+text-generation = "^0.7.0"
+atlassian-python-api = "^3.41.11"
+lxml = "^5.2.1"
+asyncio = "^3.4.3"
+pysqlite3-binary = "^0.5.2"
+faiss-cpu = "^1.8.0"
+python-dotenv = "^1.0.1"
+ipykernel = "^6.29.4"
+jupyter = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "sds-pypi"
+url = "http://70.121.224.52:8081/repository/pypi/simple"
+priority = "primary"
