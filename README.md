@@ -6,8 +6,6 @@
 
 - 사내에서 Serving 되고 있는 LLM 모델을 활용해서 RAG의 기초를 다지고, 여러가지 테스트를 해볼 수 있어요. 
 
-- 제공 가능한 LLM은 AI&MLOps Platform [컨플루언스 페이지] 에서 확인하실 수 있습니다. 
-
 - 임베딩 모델은 SDS임베딩 만을 지원하고 있습니다. 
 
 - llm은 tgi 기반의 model.py, 임베딩은 embedding.py에서 instance를 생성해서 사용합니다. 
@@ -20,7 +18,7 @@ rag-example에서 소개되었던 Confluence 기반으로 RAG하는 예제코드
 
 "src/01. basic.ipynb"부터 "06. chain.ipynb"에는 Langchain의 기초부터 RAG와 Chain 구성에 대한 예제들을 Jupyter Notebook으로 실행 가능합니다. 
 
-먼저 01.basic 노트북을 열어보시면, 사내에서 제공되는 여러 LLM 중에 한 개를 선택하여 간단한 프롬프트를 실행하는 예제를 볼 수 있습니다. 제공되는 LLM들은 [컨플루언스 페이지]에서 확인 가능합니다. 
+먼저 01.basic 노트북을 열어보시면, 사내에서 제공되는 여러 LLM 중에 한 개를 선택하여 간단한 프롬프트를 실행하는 예제를 볼 수 있습니다. 
 
 ![img.png](docs/RAG-02.png)
 
@@ -63,7 +61,5 @@ rag-example에서 소개되었던 Confluence 기반으로 RAG하는 예제코드
 
 
 
-
-[컨플루언스 페이지]:https://devops.sdsdev.co.kr/confluence/pages/viewpage.action?pageId=1003834277
 
 
