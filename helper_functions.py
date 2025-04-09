@@ -294,7 +294,7 @@ def show_context(context: List[str]) -> None:
         print("\n")
 
 
-# QA 관련 클래스 및 함수
+# Q&A 관련 클래스 및 함수
 class QuestionAnswerFromContext(BaseModel):
     """
     쿼리에 대한 답변을 생성하는 모델 클래스.
@@ -339,12 +339,12 @@ def create_question_answer_from_context_chain(llm: Any) -> Any:
 
 def answer_question_from_context(question: str, context: List[str], question_answer_from_context_chain: Any) -> Dict[str, Any]:
     """
-    주어진 컨텍스트를 사용하여 질문에 답변합니다.
+    주어진 컨텍스트를 기반으로 질문에 답변합니다.
 
     Args:
         question: 답변할 질문
         context: 답변에 사용할 컨텍스트
-        question_answer_from_context_chain: 질문-답변 체인
+        question_answer_from_context_chain: 사용할 질문-답변 체인
 
     Returns:
         답변, 컨텍스트, 질문을 포함하는 딕셔너리
@@ -361,22 +361,22 @@ def answer_question_from_context(question: str, context: List[str], question_ans
         return {"answer": answer, "context": context, "question": question}
     except Exception as e:
         print(f"질문 답변 생성 중 오류 발생: {str(e)}")
-        return {"answer": "답변을 생성하는 동안 오류가 발생했습니다.", "context": context, "question": question}
+        return {"answer": "답변을 생성할 수 없습니다.", "context": context, "question": question}
 
 
 # BM25 검색 관련 함수
 def bm25_retrieval(bm25: BM25Okapi, cleaned_texts: List[str], query: str, k: int = 5) -> List[str]:
     """
-    BM25 검색을 수행하여 상위 k개의 정제된 텍스트 청크를 반환합니다.
+    BM25 알고리즘을 사용하여 상위 k개의 관련 텍스트 청크를 검색합니다.
 
     Args:
         bm25: 사전 계산된 BM25 인덱스
         cleaned_texts: BM25 인덱스에 해당하는 정제된 텍스트 청크 목록
-        query: 쿼리 문자열
+        query: 검색 쿼리 문자열
         k: 검색할 텍스트 청크 수
 
     Returns:
-        BM25 점수 기반으로 상위 k개의 정제된 텍스트 청크
+        BM25 점수 기반 상위 k개의 정제된 텍스트 청크 목록
     """
     # 쿼리 토큰화
     query_tokens = query.split()
@@ -387,33 +387,33 @@ def bm25_retrieval(bm25: BM25Okapi, cleaned_texts: List[str], query: str, k: int
     # 상위 k개 점수의 인덱스 가져오기
     top_k_indices = np.argsort(bm25_scores)[::-1][:k]
 
-    # 상위 k개 정제된 텍스트 청크 검색
+    # 상위 k개의 정제된 텍스트 청크 검색
     top_k_texts = [cleaned_texts[i] for i in top_k_indices]
 
     return top_k_texts
 
 
-# 비동기 작업 및 오류 처리 함수
+# 백오프 및 재시도 함수
 async def exponential_backoff(attempt: int) -> None:
     """
-    지수 백오프와 지터를 사용하여 재시도 지연을 구현합니다.
+    지수 백오프 전략과 함께 지터를 구현합니다.
     
     Args:
         attempt: 현재 재시도 시도 번호
         
-    지정된 시간 동안 대기 후 작업을 재시도합니다.
-    대기 시간은 (2^attempt) + 임의의 분수 초로 계산됩니다.
+    지정된 시간 동안 대기한 후 작업을 재시도합니다.
+    대기 시간은 (2^attempt) + 0에서 1 사이의 임의의 값으로 계산됩니다.
     """
-    # 지수 백오프 및 지터를 사용하여 대기 시간 계산
+    # 지수 백오프 및 지터를 사용한 대기 시간 계산
     wait_time = (2 ** attempt) + random.uniform(0, 1)
-    print(f"Rate limit hit. Retrying in {wait_time:.2f} seconds...")
+    print(f"속도 제한에 도달했습니다. {wait_time:.2f}초 후 재시도...")
     
     # 계산된 대기 시간 동안 비동기적으로 대기
     await asyncio.sleep(wait_time)
 
 async def retry_with_exponential_backoff(coroutine: Any, max_retries: int = 5) -> Any:
     """
-    오류 발생 시 지수 백오프를 사용하여 코루틴을 재시도합니다.
+    속도 제한 오류 발생 시 지수 백오프를 사용하여 코루틴을 재시도합니다.
     
     Args:
         coroutine: 실행할 코루틴
@@ -423,19 +423,19 @@ async def retry_with_exponential_backoff(coroutine: Any, max_retries: int = 5) -
         성공 시 코루틴의 결과
         
     Raises:
-        Exception: 모든 재시도 시도가 실패한 경우
+        Exception: 모든 재시도가 실패한 경우 마지막으로 발생한 예외
     """
     for attempt in range(max_retries):
         try:
             # 코루틴 실행 시도
             return await coroutine
-        except Exception as e:  # RateLimitError 대신 일반 Exception 사용
-            # 마지막 시도도 실패하면 예외 발생
+        except Exception as e:  # 일반적인 예외 처리로 변경 (RateLimitError 대신)
+            # 마지막 시도에서도 실패한 경우 예외 발생
             if attempt == max_retries - 1:
                 raise e
             
             # 재시도 전 지수 백오프 기간 동안 대기
             await exponential_backoff(attempt)
     
-    # 최대 재시도 횟수에 도달해도 성공하지 못한 경우 예외 발생
-    raise Exception("Max retries reached")
+    # 최대 재시도 횟수에 도달했으나 성공하지 못한 경우 예외 발생
+    raise Exception("최대 재시도 횟수에 도달했습니다.")
