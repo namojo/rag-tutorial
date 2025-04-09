@@ -1,8 +1,8 @@
-from langchain.document_loaders import  PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
 from langchain_core.pydantic_v1 import BaseModel, Field
-from langchain import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 import fitz
 from typing import List
 from rank_bm25 import BM25Okapi
@@ -32,7 +32,7 @@ class CustomEmbedding(Embeddings):
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """
-        주어진 텍스트를 임베딩하여 벡터로 반환 합니다.
+        문서텍스트를 임베딩하여 벡터로 변환 합니다.
         """
         embed_list = self.call_embed(url=self.embed_url, texts=texts)
         return embed_list
@@ -42,7 +42,6 @@ class CustomEmbedding(Embeddings):
 
         embed_list = self.call_embed(url=self.embed_url, texts=[text])
         return embed_list[0]
-
 
 
 def replace_t_with_space(list_of_documents):
@@ -76,7 +75,6 @@ def text_wrap(text, width=120):
 
 
 
-
 def encode_pdf(path, chunk_size=1000, chunk_overlap=200):
     """
     Encodes a PDF book into a vector store using SDS embeddings.
@@ -103,7 +101,7 @@ def encode_pdf(path, chunk_size=1000, chunk_overlap=200):
 
     # Create embeddings and vector store
     embeddings = CustomEmbedding()
-    vectorstore = FAISS.from_documents(cleaned_texts, embeddings)
+    vectorstore = FAISS.from_documents(documents=cleaned_texts, embedding=embeddings)
 
     return vectorstore
 
@@ -122,30 +120,27 @@ def encode_from_string(content, chunk_size=1000, chunk_overlap=200):
         
     embeddings = CustomEmbedding()
 
-    vectorstore = FAISS.from_documents(chunks, embeddings)
+    vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
     return vectorstore
 
 
 def retrieve_context_per_question(question, chunks_query_retriever):
     """
-    Retrieves relevant context and unique URLs for a given question using the chunks query retriever.
-
+    Retrieves relevant context for a given question using the chunks query retriever.
+    
     Args:
-        question: The question for which to retrieve context and URLs.
-
+        question: The question for which to retrieve context.
+        chunks_query_retriever: The retriever to use for querying chunks.
+        
     Returns:
-        A tuple containing:
-        - A string with the concatenated content of relevant documents.
-        - A list of unique URLs from the metadata of the relevant documents.
+        A list with the content of relevant documents.
     """
-
-    # Retrieve relevant documents for the given question
-    docs = chunks_query_retriever.get_relevant_documents(question)
-
-    # Concatenate document content
-    # context = " ".join(doc.page_content for doc in docs)
+    
+    # Retrieve relevant documents for the given question using the modern 'invoke' method
+    docs = chunks_query_retriever.invoke(question)
+    
+    # Extract document content
     context = [doc.page_content for doc in docs]
-
     
     return context
 
